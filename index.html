@@ -1,0 +1,460 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HASHI NEXUS OMEGA | Gaming Universe</title>
+
+<meta name="description" content="Enter HASHI NEXUS OMEGA, a futuristic gaming universe featuring Emotion Powers and Steel Hero.">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: #030711;
+    color: white;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+header {
+    height: 80px;
+    padding: 0 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(5,12,25,.95);
+    border-bottom: 1px solid #123a59;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 23px;
+    font-weight: 900;
+    color: #52e7ff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px #008cff;
+}
+
+nav {
+    display: flex;
+    gap: 25px;
+}
+
+nav a {
+    color: #c2d7e9;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #52e7ff;
+}
+
+.hero {
+    min-height: 490px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 65px 20px;
+    background:
+        radial-gradient(ellipse at center, #12345a 0%, #071426 45%, #030711 80%);
+    position: relative;
+}
+
+.hero h1 {
+    font-size: clamp(42px, 8vw, 85px);
+    font-weight: 1000;
+    letter-spacing: 5px;
+    color: #75edff;
+    text-shadow: 0 0 15px #008cff, 0 0 45px #0055ff;
+}
+
+.hero h2 {
+    font-size: clamp(19px, 4vw, 30px);
+    letter-spacing: 9px;
+    margin-top: 10px;
+    color: #ffffff;
+}
+
+.hero p {
+    color: #a8bfd5;
+    margin-top: 22px;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.hero-button {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 16px 38px;
+    background: #07334b;
+    border: 1px solid #45eaff;
+    border-radius: 8px;
+    color: #8cf2ff;
+    text-decoration: none;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: .3s;
+}
+
+.hero-button:hover {
+    background: #075878;
+    box-shadow: 0 0 25px #008cff;
+    transform: translateY(-3px);
+}
+
+.section {
+    max-width: 1250px;
+    width: 90%;
+    margin: auto;
+    padding: 65px 0;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-heading h2 {
+    font-size: 34px;
+    color: #69eaff;
+    letter-spacing: 3px;
+}
+
+.section-heading p {
+    color: #829db4;
+    margin-top: 12px;
+}
+
+.search {
+    display: block;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 35px;
+    padding: 16px 20px;
+    border: 1px solid #245a78;
+    border-radius: 8px;
+    background: #081524;
+    color: white;
+    outline: none;
+    font-size: 16px;
+}
+
+.search:focus {
+    border-color: #51eaff;
+    box-shadow: 0 0 15px #006caa;
+}
+
+.games {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.game-card {
+    background: linear-gradient(145deg, #102638, #050b15);
+    border: 1px solid #174b67;
+    border-radius: 18px;
+    overflow: hidden;
+    transition: .3s;
+}
+
+.game-card:hover {
+    transform: translateY(-8px);
+    border-color: #54eaff;
+    box-shadow: 0 0 28px rgba(0,180,255,.2);
+}
+
+.game-art {
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.emotion-art {
+    background:
+        radial-gradient(circle at center, #7523a9, #111b47 55%, #040817);
+}
+
+.steel-art {
+    background:
+        radial-gradient(circle at center, #17658b, #10233c 55%, #040817);
+}
+
+.game-art span {
+    font-size: 35px;
+    font-weight: 1000;
+    text-align: center;
+    letter-spacing: 3px;
+    padding: 15px;
+    text-shadow: 0 0 15px currentColor;
+    z-index: 1;
+}
+
+.emotion-art span {
+    color: #ff9cff;
+}
+
+.steel-art span {
+    color: #80eaff;
+}
+
+.game-info {
+    padding: 25px;
+}
+
+.game-info h3 {
+    font-size: 25px;
+    color: #69eaff;
+    margin-bottom: 14px;
+}
+
+.game-info p {
+    color: #b0c3d2;
+    line-height: 1.7;
+    min-height: 55px;
+    margin-bottom: 23px;
+}
+
+.play-button {
+    display: block;
+    text-align: center;
+    padding: 16px;
+    background: #073047;
+    border: 1px solid #49eaff;
+    border-radius: 9px;
+    color: #8cefff;
+    font-weight: 900;
+    font-size: 17px;
+    text-decoration: none;
+    letter-spacing: 2px;
+    transition: .3s;
+}
+
+.play-button:hover {
+    background: #075b78;
+    box-shadow: 0 0 20px #008cff;
+}
+
+.about {
+    text-align: center;
+    color: #a7bdcf;
+    line-height: 1.9;
+    max-width: 800px;
+    margin: auto;
+}
+
+footer {
+    padding: 35px 15px;
+    text-align: center;
+    border-top: 1px solid #17415c;
+    background: #050b14;
+    color: #7893a8;
+    line-height: 2;
+}
+
+footer strong {
+    color: #56eaff;
+}
+
+@media(max-width:650px) {
+    header {
+        height: auto;
+        padding: 20px;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    nav {
+        gap: 17px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .section {
+        width: 92%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">HASHI NEXUS OMEGA</div>
+
+    <nav>
+        <a href="#home">HOME</a>
+        <a href="#games">GAMES</a>
+        <a href="#about">ABOUT</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+
+    <h1>HASHI</h1>
+    <h2>NEXUS OMEGA</h2>
+
+    <p>
+        WELCOME TO THE ULTIMATE GAMING UNIVERSE.<br>
+        Discover adventures. Explore new worlds. Play without limits.
+    </p>
+
+    <a href="#games" class="hero-button">
+        EXPLORE GAMES ↓
+    </a>
+
+</section>
+
+<section class="section" id="games">
+
+    <div class="section-heading">
+        <h2>GAME UNIVERSE</h2>
+        <p>Choose your next adventure.</p>
+    </div>
+
+    <input
+        type="text"
+        class="search"
+        id="search"
+        placeholder="🔍 Search your favourite game..."
+    >
+
+    <div class="games" id="gameList">
+
+        <!-- EMOTION POWERS -->
+
+        <div class="game-card" data-name="emotion powers">
+
+            <div class="game-art emotion-art">
+                <span>EMOTION<br>POWERS</span>
+            </div>
+
+            <div class="game-info">
+
+                <h3>EMOTION POWERS</h3>
+
+                <p>
+                    Discover powerful emotions and enter
+                    a world filled with extraordinary abilities
+                    and adventures.
+                </p>
+
+                <a
+                    href="./emotion%20powers/index.html"
+                    class="play-button"
+                >
+                    ▶ PLAY NOW
+                </a>
+
+            </div>
+        </div>
+
+        <!-- STEEL HERO -->
+
+        <div class="game-card" data-name="steel hero">
+
+            <div class="game-art steel-art">
+                <span>STEEL<br>HERO</span>
+            </div>
+
+            <div class="game-info">
+
+                <h3>STEEL HERO</h3>
+
+                <p>
+                    Assemble your armor, explore the city,
+                    and become the hero the world needs.
+                </p>
+
+                <a
+                    href="./steel%20hero/index.html"
+                    class="play-button"
+                >
+                    ▶ PLAY NOW
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<section class="section" id="about">
+
+    <div class="section-heading">
+        <h2>ABOUT US</h2>
+    </div>
+
+    <p class="about">
+        HASHI NEXUS OMEGA is a gaming universe created
+        for players who love creativity, technology,
+        action and adventure.
+
+        Our mission is to bring original gaming experiences
+        together in one place.
+    </p>
+
+</section>
+
+<footer>
+
+    <strong>HASHI NEXUS OMEGA</strong>
+
+    <br>
+
+    PLAY • EXPLORE • CONQUER
+
+    <br>
+
+    © 2026 HASHI NEXUS OMEGA. All Rights Reserved.
+
+</footer>
+
+<script>
+
+const search = document.getElementById("search");
+const cards = document.querySelectorAll(".game-card");
+
+search.addEventListener("input", function() {
+
+    const value = this.value.toLowerCase().trim();
+
+    cards.forEach(function(card) {
+
+        const name = card.dataset.name;
+
+        card.style.display =
+            name.includes(value) ? "block" : "none";
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
