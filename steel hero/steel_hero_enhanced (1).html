@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>STEEL HERO V100 · ENHANCED ARMORY EDITION</title>
+<style>
+  :root{ --hud:#3fd0ff; --warn:#ff4d4d; --ok:#4dff88; --bg:#05070d; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:"Segoe UI",system-ui,sans-serif;color:#dff;user-select:none;}
+  #game{position:fixed;inset:0;display:block;}
+  .hud{position:fixed;inset:0;pointer-events:none;z-index:10;}
+  .panel{position:absolute;background:rgba(6,14,24,.72);border:1px solid rgba(63,208,255,.45);border-radius:10px;backdrop-filter:blur(6px);box-shadow:0 0 18px rgba(63,208,255,.18);}
+  #topLeft{top:12px;left:12px;padding:10px 14px;min-width:220px;}
+  #topLeft h1{font-size:14px;letter-spacing:2px;color:var(--hud);font-weight:700;}
+  .bar{height:10px;border-radius:6px;background:#0a1a26;overflow:hidden;margin-top:6px;border:1px solid rgba(63,208,255,.25);}
+  .bar > i{display:block;height:100%;width:100%;transition:width .18s linear;}
+  #hpFill{background:linear-gradient(90deg,#00ffa3,#00c8ff);}
+  #enFill{background:linear-gradient(90deg,#ffd23f,#ff7b00);}
+  #xpFill{background:linear-gradient(90deg,#b06bff,#3fd0ff);}
+  .label{font-size:11px;opacity:.85;display:flex;justify-content:space-between;margin-top:8px;}
+  #topRight{top:12px;right:12px;padding:10px 14px;text-align:right;min-width:180px;}
+  #topRight .stat{font-size:12px;margin:3px 0;}
+  #topRight b{color:var(--hud);}
+  #missionBox{bottom:14px;left:12px;padding:10px 14px;max-width:320px;}
+  #missionBox h3{font-size:11px;color:var(--hud);letter-spacing:1px;margin-bottom:5px;}
+  #missionBox p{font-size:12px;line-height:1.4;}
+  #assistant{top:12px;left:50%;transform:translateX(-50%);padding:8px 16px;font-size:12px;color:var(--hud);white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+  #minimap{position:absolute;bottom:14px;right:12px;width:170px;height:170px;border-radius:50%;border:2px solid rgba(63,208,255,.55);background:rgba(3,10,18,.8);overflow:hidden;}
+  #minimap canvas{width:100%;height:100%;display:block;}
+  #crosshair{position:absolute;top:50%;left:50%;width:22px;height:22px;transform:translate(-50%,-50%);opacity:.9;}
+  #crosshair:before,#crosshair:after{content:"";position:absolute;background:var(--hud);}
+  #crosshair:before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%);}
+  #crosshair:after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%);}
+  #damageFlash{position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,20,20,.55) 100%);opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;}
+  /* menus */
+  .overlay{position:fixed;inset:0;background:rgba(2,6,12,.92);z-index:50;display:none;align-items:center;justify-content:center;padding:16px;overflow:auto;}
+  .overlay.show{display:flex;}
+  .menu{width:min(760px,96vw);background:linear-gradient(160deg,rgba(8,18,30,.98),rgba(4,10,18,.98));border:1px solid rgba(63,208,255,.5);border-radius:16px;padding:22px;box-shadow:0 0 60px rgba(63,208,255,.25);}
+  .menu h2{color:var(--hud);letter-spacing:3px;font-size:22px;margin-bottom:4px;}
+  .menu .sub{font-size:12px;opacity:.7;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  button{pointer-events:auto;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:1px;color:#dff;background:linear-gradient(180deg,rgba(63,208,255,.22),rgba(63,208,255,.06));border:1px solid rgba(63,208,255,.55);border-radius:9px;padding:11px 16px;transition:.15s;flex:1;min-width:130px;}
+  button:hover{background:linear-gradient(180deg,rgba(63,208,255,.4),rgba(63,208,255,.15));box-shadow:0 0 16px rgba(63,208,255,.5);}
+  button:active{transform:scale(.97);}
+  button.danger{border-color:rgba(255,80,80,.6);background:linear-gradient(180deg,rgba(255,80,80,.22),rgba(255,80,80,.05));}
+  .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:150px;margin-bottom:10px;}
+  .field label{font-size:11px;color:var(--hud);letter-spacing:1px;}
+  input[type=range]{width:100%;pointer-events:auto;}
+  input[type=color]{width:100%;height:34px;border:1px solid rgba(63,208,255,.4);border-radius:8px;background:transparent;pointer-events:auto;}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .tabs button{flex:0 0 auto;min-width:auto;padding:8px 14px;font-size:12px;}
+  .tabs button.active{background:linear-gradient(180deg,rgba(63,208,255,.55),rgba(63,208,255,.2));}
+  .page{display:none;}
+  .page.active{display:block;}
+  .kill{color:var(--ok);} .tip{font-size:11px;opacity:.7;margin-top:8px;line-height:1.5;}
+  /* AI armory */
+  #armoryMenu .menu{width:min(820px,96vw);background:linear-gradient(145deg,rgba(8,30,52,.98),rgba(4,12,24,.98));}
+  .armory-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+  .armory-card{border:1px solid rgba(63,208,255,.3);border-radius:12px;padding:14px;background:rgba(10,28,46,.7)}
+  .armory-preview{min-height:170px;border-radius:10px;background:radial-gradient(circle at 50% 35%,#397ca6,#0a1b2c 70%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .armory-core{width:74px;height:120px;border:3px solid #65dcff;border-radius:25px 25px 18px 18px;box-shadow:0 0 24px #3fd0ff,inset 0 0 22px #3fd0ff55;position:relative;animation:armoryPulse 1.6s infinite}
+  .armory-core:before,.armory-core:after{content:"";position:absolute;top:15px;width:34px;height:48px;border:3px solid #bcefff;border-radius:12px;background:linear-gradient(135deg,#6eb6d8,#183d59)}
+  .armory-core:before{right:65px;transform:rotate(-18deg)}.armory-core:after{left:65px;transform:rotate(18deg)}
+  @keyframes armoryPulse{50%{filter:brightness(1.7);transform:scale(1.04)}}
+  #assemblyTrack{height:9px;background:#071522;border-radius:8px;overflow:hidden;margin:10px 0;border:1px solid #28516a}
+  #assemblyFill{height:100%;width:0;background:linear-gradient(90deg,#39bfff,#d8fbff);transition:width .12s}
+  #markNumber{font-size:28px;font-weight:800;color:#a9edff;letter-spacing:2px}
+  #armoryStatus{font-size:12px;color:#a9edff;min-height:34px;line-height:1.5}
+  @media(max-width:620px){.armory-grid{grid-template-columns:1fr}.armory-preview{min-height:130px}#armoryMenu .menu{padding:16px}}
+  .voice-panel{margin-top:12px;padding:12px;border:1px solid rgba(63,208,255,.38);border-radius:10px;background:rgba(3,15,26,.8)}
+  .voice-panel .row{margin-top:8px}
+  #voiceStatus{font-size:12px;line-height:1.45;color:#bcefff;min-height:18px}
+  #voiceTranscript{font-size:11px;color:#8bcde8;min-height:16px;margin-top:5px;overflow-wrap:anywhere}
+  /* mobile controls */
+  #mobile{position:fixed;inset:0;pointer-events:none;z-index:20;display:none;}
+  #mobile.show{display:block;}
+  .stick{position:absolute;bottom:24px;width:130px;height:130px;border-radius:50%;background:rgba(63,208,255,.08);border:2px solid rgba(63,208,255,.35);pointer-events:auto;}
+  .stick i{position:absolute;top:50%;left:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(63,208,255,.35);border:1px solid rgba(63,208,255,.8);}
+  #stickL{left:20px;} #stickR{right:20px;}
+  .mbtn{position:absolute;width:64px;height:64px;border-radius:50%;background:rgba(63,208,255,.14);border:1px solid rgba(63,208,255,.6);color:#dff;font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:auto;letter-spacing:1px;}
+  .mbtn:active{background:rgba(63,208,255,.4);}
+  #bJump{right:170px;bottom:160px;}
+  #bFire{right:30px;bottom:160px;}
+  #bFly{right:170px;bottom:24px;}
+  #bMenu{left:20px;top:20px;width:48px;height:48px;font-size:16px;}
+  #toast{position:fixed;bottom:50%;left:50%;transform:translate(-50%,50%);background:rgba(6,14,24,.9);border:1px solid var(--hud);color:var(--hud);padding:10px 20px;border-radius:10px;font-size:13px;letter-spacing:1px;opacity:0;transition:.4s;z-index:30;pointer-events:none;}
+  #toast.show{opacity:1;transform:translate(-50%,40%);}
+  #loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:16px;}
+  #loader h1{color:var(--hud);letter-spacing:6px;font-size:28px;}
+  #loader .pb{width:min(400px,80vw);height:6px;background:#0a1a26;border-radius:3px;overflow:hidden;}
+  #loader .pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3fd0ff,#b06bff);transition:width .3s;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="damageFlash"></div>
+
+<!-- HUD -->
+<div class="hud">
+  <div id="topLeft" class="panel">
+    <h1>STEEL HERO V100 · ARMORY EDITION</h1>
+    <div class="label"><span>HULL</span><span id="hpTxt">100/100</span></div>
+    <div class="bar"><i id="hpFill"></i></div>
+    <div class="label"><span>ENERGY</span><span id="enTxt">100/100</span></div>
+    <div class="bar"><i id="enFill"></i></div>
+    <div class="label"><span>LEVEL <b id="lvlTxt">1</b></span><span id="xpTxt">0/100</span></div>
+    <div class="bar"><i id="xpFill" style="width:0%"></i></div>
+  </div>
+  <div id="topRight" class="panel">
+    <div class="stat">SCORE <b id="scoreTxt">0</b></div>
+    <div class="stat">KILLS <b id="killTxt">0</b></div>
+    <div class="stat">MODE <b id="modeTxt">GROUND</b></div>
+    <div class="stat">FPS <b id="fpsTxt">60</b></div>
+  </div>
+  <div id="assistant" class="panel">AI: Systems online. Welcome, Steel Hero.</div>
+  <div id="missionBox" class="panel">
+    <h3>▶ ACTIVE MISSION</h3>
+    <p id="missionTxt">Talk to the AI assistant. Fly to the marked zone.</p>
+  </div>
+  <div id="minimap"><canvas id="miniCanvas" width="170" height="170"></canvas></div>
+  <div id="crosshair"></div>
+</div>
+
+<!-- Mobile controls -->
+<div id="mobile">
+  <div id="stickL" class="stick"><i></i></div>
+  <div id="stickR" class="stick"><i></i></div>
+  <div id="bJump" class="mbtn">JUMP</div>
+  <div id="bFire" class="mbtn">FIRE</div>
+  <div id="bFly" class="mbtn">FLY</div>
+  <div id="bMenu" class="mbtn">☰</div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <h1>STEEL HERO V100</h1>
+  <div class="pb"><i id="loadBar"></i></div>
+  <div id="loadTxt" style="font-size:12px;opacity:.7">Initializing city...</div>
+</div>
+
+<!-- MAIN MENU -->
+<div id="mainMenu" class="overlay">
+  <div class="menu">
+    <h2>STEEL HERO V100</h2>
+    <div class="sub">Ultimate 3D Open-World Superhero</div>
+    <div class="row" style="flex-direction:column">
+      <button id="btnNew">▶ NEW GAME</button>
+      <button id="btnContinue">⏵ CONTINUE</button>
+      <button id="btnCustom">⚙ CUSTOMIZE SUIT</button>
+      <button id="btnArmory">🤖 AI ARMORY · MARK 1–85</button>
+      <button id="btnSettings">🔧 SETTINGS</button>
+      <button id="btnHowTo">❔ CONTROLS</button>
+      <button id="btnCredits">ⓘ CREDITS</button>
+    </div>
+    <div class="tip">Tip: Use flight to reach sky bosses. Manage energy — it powers your blasts and thrusters.</div>
+  </div>
+</div>
+
+<!-- Settings / Customize / HowTo (shared overlay) -->
+<div id="subMenu" class="overlay">
+  <div class="menu">
+    <div class="tabs">
+      <button data-tab="custom" class="active">SUIT</button>
+      <button data-tab="settings">SETTINGS</button>
+      <button data-tab="howto">CONTROLS</button>
+      <button data-tab="credits">CREDITS</button>
+    </div>
+
+    <div id="page-custom" class="page active">
+      <div class="row">
+        <div class="field"><label>ARMOR COLOR</label><input type="color" id="cArmor" value="#2a7fd4"></div>
+        <div class="field"><label>TRIM COLOR</label><input type="color" id="cTrim" value="#3fd0ff"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>THRUSTER COLOR</label><input type="color" id="cThruster" value="#ff7b00"></div>
+        <div class="field"><label>VISOR COLOR</label><input type="color" id="cVisor" value="#00ffd5"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>HEIGHT SCALE <span id="vScale">1.0</span></label><input type="range" id="rScale" min="0.8" max="1.3" step="0.05" value="1"></div>
+        <div class="field"><label>THRUSTER POWER <span id="vThrust">1.0</span></label><input type="range" id="rThrust" min="0.6" max="1.6" step="0.05" value="1"></div>
+      </div>
+      <button id="btnApplySuit">APPLY SUIT</button>
+    </div>
+
+    <div id="page-settings" class="page">
+      <div class="field"><label>MOUSE / CAMERA SENSITIVITY <span id="vSens">1.0</span></label><input type="range" id="rSens" min="0.3" max="3" step="0.1" value="1"></div>
+      <div class="field"><label>FIELD OF VIEW <span id="vFov">75</span></label><input type="range" id="rFov" min="50" max="110" step="1" value="75"></div>
+      <div class="field"><label>RENDER DISTANCE <span id="vDraw">600</span></label><input type="range" id="rDraw" min="200" max="1200" step="50" value="600"></div>
+      <div class="row">
+        <button id="btnFP">TOGGLE 1st/3rd PERSON</button>
+        <button id="btnQuality">GRAPHICS: HIGH</button>
+      </div>
+      <button id="btnBackMenu">← BACK TO MAIN MENU</button>
+    </div>
+
+    <div id="page-howto" class="page">
+      <div class="tip" style="font-size:13px;opacity:1">
+        <b>PC:</b><br>
+        WASD — Move · Mouse — Look · Shift — Sprint / Boost<br>
+        Space — Jump / Fly toggle · F — Toggle Flight<br>
+        Left Click / E — Fire energy blast · Q — Melee<br>
+        V — 1st/3rd person · M — Mission list · Esc — Menu<br><br>
+        <b>Mobile:</b><br>
+        Left stick — move · Right stick — look<br>
+        JUMP / FLY / FIRE buttons · ☰ menu
+      </div>
+      <button id="btnBackMenu2">← BACK TO MAIN MENU</button>
+    </div>
+
+    <div id="page-credits" class="page">
+      <div class="tip" style="font-size:13px;opacity:1">
+        STEEL HERO V100 — an original procedural 3D open-world superhero game.<br>
+        Built with Three.js. All geometry, AI, audio and systems generated at runtime.<br><br>
+        Design · Code · World: Steel Hero Team.
+      </div>
+      <button id="btnBackMenu3">← BACK TO MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI suit assembly workshop -->
+<div id="armoryMenu" class="overlay">
+  <div class="menu">
+    <h2>STARK-CLASS AI ARMORY</h2>
+    <div class="sub">VOICE-CONTROLLED LOCAL AI · 85 ARMOR CONFIGURATIONS · SUIT ASSEMBLY</div>
+    <div class="armory-grid">
+      <div class="armory-card">
+        <div class="armory-preview"><div class="armory-core"></div></div>
+        <div style="margin-top:12px;font-size:11px;color:#8bcde8;letter-spacing:1px">SELECTED ARMOR</div>
+        <div id="markNumber">MARK 01</div>
+        <div id="markDescription" class="tip">Prototype flight armor. Balanced defense and mobility.</div>
+        <div class="field" style="margin-top:12px">
+          <label for="markSelect">ARMOR SERIES · MARK 1–85</label>
+          <input id="markSelect" type="range" min="1" max="85" step="1" value="1">
+        </div>
+        <div class="row"><button id="markPrev">◀ PREVIOUS</button><button id="markNext">NEXT ▶</button></div>
+      </div>
+      <div class="armory-card">
+        <div style="font-size:12px;color:#8bcde8;letter-spacing:1px;margin-bottom:8px">ASSEMBLY AI</div>
+        <div id="armoryStatus">AI CORE: ONLINE. Choose a Mark and begin assembly.</div>
+        <div id="assemblyTrack"><div id="assemblyFill"></div></div>
+        <button id="btnAssemble">⚡ ASSEMBLE SELECTED SUIT</button>
+        <div class="voice-panel">
+          <div style="font-size:12px;color:#8bcde8;letter-spacing:1px;margin-bottom:7px">🎙️ TALK TO ARMORY AI</div>
+          <div id="voiceStatus">VOICE AI: Ready. Press START LISTENING and allow microphone access.</div>
+          <div id="voiceTranscript"></div>
+          <div class="row">
+            <button id="btnVoice" type="button">🎙️ START LISTENING</button>
+            <button id="btnVoiceHelp" type="button">VOICE COMMANDS</button>
+          </div>
+          <div class="tip">Try: “Select Mark 25”, “Assemble suit”, “Next Mark”, or “What can you do?”</div>
+        </div>
+        <button id="btnArmoryClose" class="danger" style="margin-top:8px">← RETURN TO GAME</button>
+        <div class="tip">This is an in-game scripted AI simulation. Suit designs, colors and performance are generated locally in your browser; no external AI service or API key is required.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- In-game pause menu -->
+<div id="pauseMenu" class="overlay">
+  <div class="menu" style="max-width:520px">
+    <h2>PAUSED</h2>
+    <div class="sub">Steel Hero V100</div>
+    <div class="row" style="flex-direction:column">
+      <button id="pResume">▶ RESUME</button>
+      <button id="pSave">💾 SAVE GAME</button>
+      <button id="pLoad">📂 LOAD GAME</button>
+      <button id="pCustom">⚙ CUSTOMIZE / SETTINGS</button>
+      <button id="pArmory">🤖 AI ARMORY · MARK 1–85</button>
+      <button id="pRestart" class="danger">⟲ RESTART WORLD</button>
+      <button id="pQuit" class="danger">✕ QUIT TO MENU</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   STEEL HERO V100 — full game
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp = (a,b,t)=>a+(b-a)*t;
+const rnd = (a,b)=>a+Math.random()*(b-a);
+
+/* ---------- Global state ---------- */
+const Game = {
+  ready:false, running:false, paused:false,
+  hp:100, hpMax:100, en:100, enMax:100,
+  xp:0, xpNext:100, level:1, score:0, kills:0,
+  firstPerson:false, quality:'high',
+  sens:1, fov:75, draw:600,
+  suit:{ armor:'#2a7fd4', trim:'#3fd0ff', thruster:'#ff7b00', visor:'#00ffd5', scale:1, thrust:1 },
+  missionIndex:0, missionProgress:0, missions:[],
+  time:0
+};
+
+/* ---------- Three.js setup ---------- */
+let renderer, scene, camera, clock;
+const WORLD_SIZE = 1600;
+const chunks = new Map();        // city chunks
+const CHUNK = 200;
+
+/* ============================================================
+   AUDIO (WebAudio synth — no external files)
+   ============================================================ */
+const Audio = (()=>{
+  let ctx=null, master=null;
+  function init(){
+    if(ctx) return;
+    try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+    master = ctx.createGain(); master.gain.value = .35; master.connect(ctx.destination);
+  }
+  function tone(freq,dur,type='sine',vol=.3,slideTo){
+    if(!ctx) return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,ctx.currentTime);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,ctx.currentTime+dur);
+    g.gain.setValueAtTime(vol,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+dur);
+    o.connect(g); g.connect(master); o.start(); o.stop(ctx.currentTime+dur);
+  }
+  function noise(dur,vol=.3,filterFreq=800){
+    if(!ctx) return;
+    const n=ctx.createBufferSource();
+    const b=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate);
+    const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+    n.buffer=b;
+    const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=filterFreq;
+    const g=ctx.createGain(); g.gain.value=vol;
+    n.connect(f); f.connect(g); g.connect(master); n.start();
+  }
+  return {
+    init,
+    blast(){ tone(880,.25,'sawtooth',.25,180); noise(.12,.15,1500); },
+    hit(){ tone(180,.12,'square',.3,80); noise(.08,.2,600); },
+    jump(){ tone(300,.18,'sine',.2,700); },
+    fly(){ noise(.5,.08,400); },
+    levelup(){ tone(523,.15,'sine',.3); setTimeout(()=>tone(659,.15,'sine',.3),120); setTimeout(()=>tone(784,.3,'sine',.3),240); },
+    explode(){ noise(.6,.5,300); tone(90,.5,'sawtooth',.4,40); },
+    pickup(){ tone(1200,.1,'sine',.25,1800); },
+    ui(){ tone(660,.06,'square',.15); },
+    speak(){ /* visual only */ }
+  };
+})();
+
+/* ============================================================
+   ASSISTANT (text + optional speech)
+   ============================================================ */
+const Assistant = {
+  el: $('#assistant'),
+  say(msg, dur=4000){
+    this.el.textContent = 'AI: ' + msg;
+    clearTimeout(this._t);
+    this._t = setTimeout(()=>{ this.el.textContent='AI: Standing by.'; }, dur);
+    if('speechSynthesis' in window){
+      try{
+        speechSynthesis.cancel();
+        const u=new SpeechSynthesisUtterance(msg);
+        u.rate=1.05; u.pitch=.9; u.volume=.6;
+        speechSynthesis.speak(u);
+      }catch(e){}
+    }
+  }
+};
+
+/* ============================================================
+   WORLD GENERATION (procedural city, streamed)
+   ============================================================ */
+function makeBuilding(w,h,d,color){
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.6, metalness:.35});
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  body.position.y=h/2; body.castShadow=true; body.receiveShadow=true;
+  g.add(body);
+  // windows emissive strips
+  const winMat = new THREE.MeshStandardMaterial({color:0x0a1a26, emissive:0x3fd0ff, emissiveIntensity:.22, roughness:.24});
+  const rows = Math.max(1, Math.floor(h/9));
+  for(let i=0;i<rows;i++){
+    const band = new THREE.Mesh(new THREE.BoxGeometry(w*1.02, 1.2, d*1.02), winMat);
+    band.position.y = 5 + i*9;
+    g.add(band);
+  }
+  // rooftop accent
+  if(Math.random()<.5){
+    const ant = new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,6,6),
+      new THREE.MeshStandardMaterial({color:0xff4444, emissive:0xff2222, emissiveIntensity:1}));
+    ant.position.y = h+3; g.add(ant);
+  }
+  return g;
+}
+
+const buildingColors = [0x526777,0x637887,0x435968,0x4c6575,0x718594,0x3e5362];
+
+function generateChunk(cx,cz){
+  const key = cx+','+cz;
+  if(chunks.has(key)) return;
+  const grp = new THREE.Group();
+  const baseX = cx*CHUNK, baseZ = cz*CHUNK;
+  // ground
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(CHUNK,CHUNK),
+    new THREE.MeshStandardMaterial({color:0x596b78, roughness:1, metalness:0})
+  );
+  ground.rotation.x = -Math.PI/2;
+  ground.position.set(baseX+CHUNK/2, 0, baseZ+CHUNK/2);
+  ground.receiveShadow = true;
+  grp.add(ground);
+  // road grid
+  const roadMat = new THREE.MeshStandardMaterial({color:0x263542, roughness:.88});
+  for(let i=0;i<3;i++){
+    const r = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK,10), roadMat);
+    r.rotation.x=-Math.PI/2; r.position.set(baseX+CHUNK/2, .02, baseZ+30+i*70);
+    grp.add(r);
+    const r2 = new THREE.Mesh(new THREE.PlaneGeometry(10,CHUNK), roadMat);
+    r2.rotation.x=-Math.PI/2; r2.position.set(baseX+30+i*70, .02, baseZ+CHUNK/2);
+    grp.add(r2);
+  }
+  // buildings on grid cells (avoid center plaza)
+  for(let gx=0; gx<3; gx++){
+    for(let gz=0; gz<3; gz++){
+      const px = baseX + 25 + gx*70;
+      const pz = baseZ + 25 + gz*70;
+      // skip some cells randomly, and the global spawn plaza
+      if(Math.random()<.12) continue;
+      if(Math.abs(px)<40 && Math.abs(pz)<40) continue;
+      const w = rnd(18,34), d = rnd(18,34), h = rnd(20,90);
+      const b = makeBuilding(w,h,d, buildingColors[(Math.random()*buildingColors.length)|0]);
+      b.position.set(px, 0, pz);
+      b.userData.solid = true;
+      b.userData.radius = Math.max(w,d)*.5 + 1;
+      b.userData.height = h;
+      grp.add(b);
+    }
+  }
+  // occasional tall landmark
+  if(Math.random()<.4){
+    const px = baseX + rnd(40,CHUNK-40), pz = baseZ + rnd(40,CHUNK-40);
+    const h = rnd(100,180);
+    const b = makeBuilding(rnd(22,30), h, rnd(22,30), 0x223040);
+    b.position.set(px,0,pz);
+    b.userData.solid=true; b.userData.radius=16; b.userData.height=h;
+    grp.add(b);
+  }
+  scene.add(grp);
+  chunks.set(key, grp);
+}
+
+function updateChunks(px,pz){
+  const range = Game.quality==='high'?2:1;
+  const ccx = Math.floor(px/CHUNK), ccz = Math.floor(pz/CHUNK);
+  for(let dx=-range;dx<=range;dx++)
+    for(let dz=-range;dz<=range;dz++)
+      generateChunk(ccx+dx, ccz+dz);
+  // unload far
+  for(const [k,g] of chunks){
+    const [x,z]=k.split(',').map(Number);
+    if(Math.abs(x-ccx)>range+1 || Math.abs(z-ccz)>range+1){
+      scene.remove(g);
+      g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose()); else o.material.dispose(); }});
+      chunks.delete(k);
+    }
+  }
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+const Hero = {
+  group:null, body:null, visor:null,
+  vel:new THREE.Vector3(), onGround:true, flying:false,
+  facing:0, yaw:0, pitch:0,
+  radius:1.2, height:3.2,
+  lastShot:0, lastMelee:0, lastDamage:0,
+  invuln:0
+};
+
+function buildHero(){
+  const g = new THREE.Group();
+  const armorMat = new THREE.MeshStandardMaterial({color:new THREE.Color(Game.suit.armor), metalness:.92, roughness:.2});
+  const trimMat  = new THREE.MeshStandardMaterial({color:new THREE.Color(Game.suit.trim), metalness:.95, roughness:.16, emissive:new THREE.Color(Game.suit.trim), emissiveIntensity:.48});
+  const darkMat = new THREE.MeshStandardMaterial({color:0x172b3b, metalness:.88, roughness:.3});
+  const plateMat = new THREE.MeshStandardMaterial({color:0x8fb5c8, metalness:.95, roughness:.22});
+  const visorMat = new THREE.MeshStandardMaterial({color:new THREE.Color(Game.suit.visor), emissive:new THREE.Color(Game.suit.visor), emissiveIntensity:1.1, roughness:.1, metalness:.5});
+
+  // Smooth, fitted power-armor silhouette: rounded shells over a dark flexible undersuit.
+  const addMesh=(geo,mat,x,y,z,sx=1,sy=1,sz=1,rz=0)=>{
+    const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.scale.set(sx,sy,sz); m.rotation.z=rz;
+    m.castShadow=true; m.receiveShadow=true; g.add(m); return m;
+  };
+  const shell=(x,y,z,sx,sy,sz,mat=armorMat)=>addMesh(new THREE.SphereGeometry(1,20,16),mat,x,y,z,sx,sy,sz);
+  // Core torso and layered chest plates
+  shell(0,1.98,0,.72,.91,.43,darkMat);
+  shell(0,2.13,.015,.77,.76,.46,armorMat);
+  shell(0,2.34,.34,.48,.36,.17,plateMat);
+  shell(0,2.33,.445,.22,.22,.055,trimMat); // chest energy core
+  for(const side of [-1,1]){
+    shell(side*.48,2.03,.32,.22,.49,.13,plateMat);
+    shell(side*.29,1.48,.04,.34,.15,.34,armorMat);
+    // shoulder shells blend into upper arms
+    shell(side*.86,2.57,0,.36,.34,.38,armorMat);
+    shell(side*.91,2.62,.10,.29,.22,.34,plateMat);
+  }
+  // Neck ring and compact helmet
+  addMesh(new THREE.CylinderGeometry(.22,.25,.18,16),darkMat,0,2.78,0);
+  shell(0,3.08,0,.34,.42,.34,armorMat);
+  shell(0,3.08,.285,.27,.105,.065,visorMat);
+  // Back power pack, twin exhaust housings and fins
+  shell(0,2.08,-.48,.48,.58,.24,darkMat);
+  for(const side of [-1,1]){
+    const pod=addMesh(new THREE.CylinderGeometry(.13,.17,.66,14),darkMat,side*.28,2.08,-.66);
+    pod.rotation.x=Math.PI/2;
+    const glow=addMesh(new THREE.CircleGeometry(.105,16),trimMat,side*.28,2.08,-.995);
+    glow.rotation.y=Math.PI;
+    shell(side*.48,2.13,-.48,.12,.46,.18,plateMat);
+  }
+  // Arms: rounded upper-arm shells, elbow joints, forearm gauntlets and palm emitters
+  for(const side of [-1,1]){
+    shell(side*.94,2.08,0,.23,.48,.24,darkMat);
+    shell(side*.96,2.12,.015,.25,.38,.25,armorMat);
+    shell(side*.98,1.58,.015,.19,.19,.20,darkMat);
+    shell(side*1.0,1.16,.045,.24,.43,.25,armorMat);
+    shell(side*1.0,1.18,.20,.20,.32,.105,plateMat);
+    shell(side*1.0,.69,.02,.18,.20,.19,darkMat);
+    shell(side*1.0,.49,.08,.20,.18,.22,armorMat);
+    addMesh(new THREE.CircleGeometry(.105,16),trimMat,side*1.0,.49,.285);
+  }
+  // Legs: articulated thighs, knee guards, tapered shins and solid boots
+  for(const side of [-1,1]){
+    shell(side*.39,1.05,0,.29,.54,.31,darkMat);
+    shell(side*.39,1.13,.07,.30,.47,.31,armorMat);
+    shell(side*.39,.66,.285,.20,.25,.075,plateMat);
+    shell(side*.39,.48,0,.20,.18,.22,darkMat);
+    shell(side*.39,.03,0,.24,.48,.27,armorMat);
+    shell(side*.39,-.27,.02,.25,.20,.29,plateMat);
+    shell(side*.39,-.48,.10,.28,.16,.42,darkMat);
+    const bootJet=addMesh(new THREE.CylinderGeometry(.11,.15,.26,12),darkMat,side*.39,-.62,-.08);
+    bootJet.userData.isThruster=true; bootJet.userData.side=side;
+  }
+  const backThruster=addMesh(new THREE.CylinderGeometry(.23,.29,.42,16),darkMat,0,1.95,-.82);
+  backThruster.rotation.x=Math.PI/2; backThruster.userData.isThruster=true; backThruster.userData.side=0;
+  const torso = g.children.find(o=>o.isMesh) || null;
+  const visor = g.children.find(o=>o.isMesh && o.material===visorMat) || null;
+  g.scale.setScalar(Game.suit.scale);
+  Hero.group=g; Hero.body=torso; Hero.visor=visor;
+  scene.add(g);
+}
+
+function refreshHeroColors(){
+  if(!Hero.group) return;
+  const armor=new THREE.Color(Game.suit.armor), trim=new THREE.Color(Game.suit.trim),
+        thr=new THREE.Color(Game.suit.thruster), vis=new THREE.Color(Game.suit.visor);
+  Hero.group.traverse(o=>{
+    if(!o.isMesh) return;
+    const m=o.material;
+    if(o.userData.isThruster){ m.emissive.copy(thr); }
+    else if(o.geometry && o.geometry.type==='CircleGeometry'){ m.emissive.copy(trim); }
+    else if(m.color){
+      // heuristic: trim material is the brighter one originally; recolor by current compare
+      if(m.emissiveIntensity>0.8){ m.color.copy(vis); m.emissive.copy(vis); }
+      else if(m.emissiveIntensity>0.3){ m.color.copy(trim); m.emissive.copy(trim); }
+      else { m.color.copy(armor); }
+    }
+  });
+  Hero.group.scale.setScalar(Game.suit.scale);
+}
+
+function updateHero(dt){
+  if(!Hero.group) return;
+  const g=Hero.group;
+  const move=new THREE.Vector3();
+  const spd = Hero.flying? 26 : (Input.sprint? 14 : 9);
+
+  // input direction relative to camera yaw
+  const camYaw = Hero.yaw;
+  const fwd = new THREE.Vector3(Math.sin(camYaw),0,Math.cos(camYaw));
+  const right = new THREE.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
+  move.addScaledVector(fwd, (Input.f?1:0)-(Input.b?1:0));
+  move.addScaledVector(right, (Input.r?1:0)-(Input.l?1:0));
+  if(move.lengthSq()>0) move.normalize();
+
+  if(Hero.flying){
+    // vertical control via jump/crouch
+    let vy=0;
+    if(Input.jump) vy += spd*.6;
+    if(Input.down) vy -= spd*.6;
+    Hero.vel.x = lerp(Hero.vel.x, move.x*spd, 1-Math.pow(.001,dt));
+    Hero.vel.z = lerp(Hero.vel.z, move.z*spd, 1-Math.pow(.001,dt));
+    Hero.vel.y = lerp(Hero.vel.y, vy + (move.lengthSq()>0?0:0), 1-Math.pow(.01,dt));
+    if(Hero.vel.y===0 && !Input.jump && !Input.down) Hero.vel.y = lerp(Hero.vel.y,0,1-Math.pow(.02,dt));
+    Hero.onGround=false;
+  } else {
+    Hero.vel.x = lerp(Hero.vel.x, move.x*spd, 1-Math.pow(.0001,dt));
+    Hero.vel.z = lerp(Hero.vel.z, move.z*spd, 1-Math.pow(.0001,dt));
+    Hero.vel.y -= 30*dt; // gravity
+    if(Hero.onGround && Input.jump){ Hero.vel.y = 14; Hero.onGround=false; Audio.jump(); }
+  }
+
+  // integrate + collide with buildings (simple cylinder/AABB)
+  const nx = g.position.x + Hero.vel.x*dt;
+  const nz = g.position.z + Hero.vel.z*dt;
+  const ny = g.position.y + Hero.vel.y*dt;
+  const pos = resolveCollision(nx,ny,nz, g.position);
+  g.position.copy(pos);
+
+  if(g.position.y<=0){ g.position.y=0; Hero.vel.y=0; Hero.onGround=true; if(Hero.flying){/*stay flying*/} }
+  else if(g.position.y>0 && !Hero.flying) Hero.onGround=false;
+
+  // world bounds
+  const lim = WORLD_SIZE/2;
+  g.position.x = clamp(g.position.x,-lim,lim);
+  g.position.z = clamp(g.position.z,-lim,lim);
+
+  // rotate body toward movement
+  if(move.lengthSq()>0.01){
+    const target = Math.atan2(move.x,move.z);
+    let d = target - g.rotation.y;
+    while(d>Math.PI) d-=Math.PI*2; while(d<-Math.PI) d+=Math.PI*2;
+    g.rotation.y += d*Math.min(1,dt*10);
+  }
+  // flying lean
+  g.rotation.x = Hero.flying? lerp(g.rotation.x, move.lengthSq()>0.01? -.25:0, dt*4) : lerp(g.rotation.x,0,dt*6);
+
+  // thruster glow
+  const thrustOn = Hero.flying || (!Hero.onGround && Hero.vel.y>2);
+  Hero.group.traverse(o=>{
+    if(o.isMesh && o.userData.isThruster){
+      o.material.emissiveIntensity = lerp(o.material.emissiveIntensity, thrustOn? (2.5*Game.suit.thrust):0, dt*8);
+      if(thrustOn) o.scale.setScalar(lerp(o.scale.x,1.3+Math.random()*.2,dt*10));
+      else o.scale.setScalar(lerp(o.scale.x,1,dt*10));
+    }
+  });
+
+  // camera
+  updateCamera(dt);
+  // chunks
+  updateChunks(g.position.x, g.position.z);
+}
+
+function resolveCollision(nx,ny,nz,prev){
+  const p = new THREE.Vector3(nx,ny,nz);
+  const heroBottom = p.y + 0.1;
+  const heroTop = p.y + Hero.height*Game.suit.scale;
+  for(const [key,grp] of chunks){
+    for(const b of grp.children){
+      if(!b.userData.solid) continue;
+      const r = b.userData.radius;
+      const h = b.userData.height;
+      const dx = p.x - b.position.x, dz = p.z - b.position.z;
+      const distXZ = Math.hypot(dx,dz);
+      const overlap = (r + Hero.radius) - distXZ;
+      if(overlap>0 && heroBottom < h){
+        // push out horizontally
+        if(distXZ>0.0001){
+          p.x += (dx/distXZ)*overlap;
+          p.z += (dz/distXZ)*overlap;
+        } else { p.x += Hero.radius; }
+      }
+    }
+  }
+  return p;
+}
+
+/* ============================================================
+   CAMERA
+   ============================================================ */
+function updateCamera(dt){
+  const g = Hero.group;
+  const headPos = new THREE.Vector3(g.position.x, g.position.y + (Game.firstPerson? 3.0*Game.suit.scale : 2.4*Game.suit.scale), g.position.z);
+  if(Game.firstPerson){
+    camera.position.copy(headPos);
+    camera.rotation.set(Hero.pitch, Hero.yaw, 0, 'YXZ');
+  } else {
+    const dist = 7;
+    const off = new THREE.Vector3(
+      -Math.sin(Hero.yaw)*Math.cos(Hero.pitch)*dist,
+      -Math.sin(Hero.pitch)*dist + 1.5,
+      -Math.cos(Hero.yaw)*Math.cos(Hero.pitch)*dist
+    );
+    const desired = new THREE.Vector3().copy(headPos).add(off);
+    // camera collision: don't go inside buildings
+    const cpos = cameraCollide(headPos, desired);
+    camera.position.lerp(cpos, 1-Math.pow(.0001,dt));
+    camera.lookAt(headPos.x, headPos.y+.3, headPos.z);
+  }
+}
+function cameraCollide(from,to){
+  const dir = new THREE.Vector3().subVectors(to,from);
+  const len = dir.length(); dir.normalize();
+  let t = len;
+  const ray = new THREE.Ray(from, dir);
+  for(const [key,grp] of chunks){
+    for(const b of grp.children){
+      if(!b.userData.solid) continue;
+      // approximate as vertical cylinder
+      const r=b.userData.radius+0.5, h=b.userData.height;
+      const dx=from.x-b.position.x, dz=from.z-b.position.z;
+      const a=dir.x*dir.x+dir.z*dir.z;
+      const bq=2*(dir.x*dx+dir.z*dz);
+      const c=dx*dx+dz*dz-r*r;
+      if(a<1e-6) continue;
+      const disc=bq*bq-4*a*c;
+      if(disc<0) continue;
+      const sq=Math.sqrt(disc);
+      const t1=(-bq-sq)/(2*a), t2=(-bq+sq)/(2*a);
+      if(t1>0.05 && t1<t) t=t1;
+      else if(t2>0.05 && t2<t) t=t2;
+    }
+  }
+  return from.clone().addScaledVector(dir, Math.max(1.2, t-0.3));
+}
+
+/* ============================================================
+   ENEMIES
+   ============================================================ */
+const enemies=[];
+const EnemyTypes = {
+  drone:{ hp:30, speed:8, dmg:8, range:22, color:0xff5533, size:1.1, score:50, xp:20, air:true },
+  trooper:{ hp:55, speed:5, dmg:12, range:16, color:0xaa44ff, size:1.6, score:80, xp:30, air:false },
+  heavy:{ hp:140, speed:3.5, dmg:20, range:20, color:0xff8800, size:2.4, score:180, xp:70, air:false },
+  boss:{ hp:900, speed:6, dmg:30, range:40, color:0xff0044, size:5, score:1500, xp:500, air:true }
+};
+
+function spawnEnemy(type, pos){
+  const T = EnemyTypes[type];
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color:T.color, metalness:.7, roughness:.3, emissive:T.color, emissiveIntensity:.35});
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(T.size, 1), mat);
+  core.castShadow=true; g.add(core);
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(T.size*.35, 8, 8),
+    new THREE.MeshStandardMaterial({color:0xffffff, emissive:0xff0000, emissiveIntensity:2}));
+  eye.position.z=T.size*.9; g.add(eye);
+  if(T.air){
+    for(const s of [-1,1]){
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(T.size*.8,.12,6,12),
+        new THREE.MeshStandardMaterial({color:T.color, emissive:T.color, emissiveIntensity:.8}));
+      ring.rotation.x=Math.PI/2; ring.position.y=s*T.size*.3; g.add(ring);
+    }
+  }
+  g.position.copy(pos);
+  scene.add(g);
+
+  const e = {
+    type, group:g, hp:T.hp, hpMax:T.hp, speed:T.speed, dmg:T.dmg, range:T.range,
+    state:'patrol', target:new THREE.Vector3(), lastAttack:0, home:pos.clone(),
+    wanderTimer:0, hitFlash:0, dead:false
+  };
+  enemies.push(e);
+  return e;
+}
+
+function updateEnemies(dt){
+  const heroPos = Hero.group.position;
+  for(let i=enemies.length-1;i>=0;i--){
+    const e = enemies[i];
+    if(e.dead){ scene.remove(e.group); e.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}); enemies.splice(i,1); continue; }
+    const dist = e.group.position.distanceTo(heroPos);
+    // state transitions
+    if(dist < e.range+5) e.state='chase';
+    else if(dist > e.range+25 && e.state!=='patrol') e.state='patrol';
+
+    if(e.state==='patrol'){
+      e.wanderTimer -= dt;
+      if(e.wanderTimer<=0){
+        e.wanderTimer = rnd(3,6);
+        e.target.set(e.home.x+rnd(-30,30), e.home.y+rnd(-10,10), e.home.z+rnd(-30,30));
+      }
+      moveTowards(e, e.target, dt, e.speed*.4);
+    } else if(e.state==='chase'){
+      const dy = e.type==='boss'||EnemyTypes[e.type].air ? heroPos.y+2 : 0;
+      const goal = new THREE.Vector3(heroPos.x, e.group.position.y, heroPos.z);
+      // vertical for air units
+      if(EnemyTypes[e.type].air){
+        goal.y = lerp(e.group.position.y, heroPos.y+3, dt*1.5);
+      }
+      moveTowards(e, goal, dt, e.speed);
+      // attack
+      if(dist < e.range && Game.time - e.lastAttack > (e.type==='boss'?1.2:1.5)){
+        e.lastAttack = Game.time;
+        enemyAttack(e);
+      }
+    }
+    // face hero
+    if(dist<e.range+10){
+      const a = Math.atan2(heroPos.x-e.group.position.x, heroPos.z-e.group.position.z);
+      e.group.rotation.y = lerp(e.group.rotation.y, a, dt*5);
+    }
+    // spin visuals
+    e.group.children.forEach((c,idx)=>{
+      if(c.geometry && c.geometry.type==='TorusGeometry') c.rotation.z += dt*4*(idx%2?1:-1);
+    });
+    if(e.hitFlash>0){ e.hitFlash-=dt; e.group.children[0].material.emissiveIntensity = 2*e.hitFlash; }
+  }
+}
+
+function moveTowards(e, target, dt, speed){
+  const dir = new THREE.Vector3().subVectors(target, e.group.position);
+  const d = dir.length();
+  if(d>0.5){ dir.normalize(); e.group.position.addScaledVector(dir, speed*dt); }
+  // clamp to world & ground
+  const lim=WORLD_SIZE/2;
+  e.group.position.x=clamp(e.group.position.x,-lim,lim);
+  e.group.position.z=clamp(e.group.position.z,-lim,lim);
+  if(!EnemyTypes[e.type].air && e.group.position.y<EnemyTypes[e.type].size) e.group.position.y = EnemyTypes[e.type].size;
+}
+
+function enemyAttack(e){
+  const heroPos = Hero.group.position;
+  const start = e.group.position.clone();
+  const dir = new THREE.Vector3().subVectors(heroPos,start).normalize();
+  spawnProjectile(start.clone().addScaledVector(dir, EnemyTypes[e.type].size+1), dir.multiplyScalar(60), e.dmg, e.type==='boss'?0xff0044:0xff3300, false);
+  Audio.tone(220,.15,'sawtooth',.15,110);
+}
+
+/* ============================================================
+   PROJECTILES
+   ============================================================ */
+const projectiles=[];
+function spawnProjectile(pos, vel, dmg, color, fromPlayer, radius=0.6){
+  const geo = new THREE.SphereGeometry(radius, 8, 8);
+  const mat = new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:2});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(pos); scene.add(mesh);
+  const light = new THREE.PointLight(color, 1.5, 12); mesh.add(light);
+  projectiles.push({mesh, vel, dmg, life:3, fromPlayer});
+}
+
+function updateProjectiles(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p=projectiles[i];
+    p.life-=dt;
+    p.mesh.position.addScaledVector(p.vel, dt);
+    let remove = p.life<=0;
+    if(!remove){
+      if(p.fromPlayer){
+        for(const e of enemies){
+          if(e.dead) continue;
+          const r = EnemyTypes[e.type].size + 1;
+          if(p.mesh.position.distanceTo(e.group.position) < r){
+            damageEnemy(e, p.dmg);
+            remove=true; break;
+          }
+        }
+      } else {
+        if(Hero.group && p.mesh.position.distanceTo(new THREE.Vector3(Hero.group.position.x,Hero.group.position.y+1.5,Hero.group.position.z)) < 1.8){
+          damageHero(p.dmg); remove=true;
+        }
+      }
+    }
+    // hit ground / buildings
+    if(p.mesh.position.y < 0.2) remove=true;
+    if(Math.abs(p.mesh.position.x)>WORLD_SIZE/2 || Math.abs(p.mesh.position.z)>WORLD_SIZE/2) remove=true;
+
+    if(remove){
+      // small pop
+      spawnExplosion(p.mesh.position, p.fromPlayer?0x3fd0ff:0xff3300, .6);
+      scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose();
+      projectiles.splice(i,1);
+    }
+  }
+}
+
+/* ============================================================
+   FX: explosions, particles
+   ============================================================ */
+const particles=[];
+function spawnExplosion(pos, color, scale=1){
+  for(let i=0;i<10*scale;i++){
+    const g=new THREE.Mesh(new THREE.SphereGeometry(.2*scale,5,5),
+      new THREE.MeshBasicMaterial({color, transparent:true}));
+    g.position.copy(pos); scene.add(g);
+    particles.push({mesh:g, vel:new THREE.Vector3(rnd(-6,6),rnd(0,8),rnd(-6,6)), life:.6, max:.6});
+  }
+}
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.life-=dt;
+    p.mesh.position.addScaledVector(p.vel,dt);
+    p.vel.y -= 12*dt;
+    p.mesh.material.opacity = p.life/p.max;
+    p.mesh.scale.multiplyScalar(1-dt*1.5);
+    if(p.life<=0){ scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); particles.splice(i,1); }
+  }
+}
+
+/* ============================================================
+   COMBAT
+   ============================================================ */
+function playerShoot(){
+  if(Game.en < 8) return;
+  if(Game.time - Hero.lastShot < .18) return;
+  Hero.lastShot = Game.time;
+  Game.en -= 8;
+  const origin = new THREE.Vector3(Hero.group.position.x, Hero.group.position.y+2.2, Hero.group.position.z);
+  // aim from camera direction
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  // slight auto-aim
+  let best=null, bestDot=.95;
+  for(const e of enemies){
+    const to=new THREE.Vector3().subVectors(e.group.position, origin).normalize();
+    const d=to.dot(dir);
+    if(d>bestDot){ bestDot=d; best=e; }
+  }
+  if(best){
+    dir.subVectors(best.group.position, origin).normalize();
+  }
+  spawnProjectile(origin.clone().addScaledVector(dir,2), dir.multiplyScalar(90), 22, new THREE.Color(Game.suit.trim).getHex(), true, .5);
+  Audio.blast();
+}
+
+function playerMelee(){
+  if(Game.time - Hero.lastMelee < .5) return;
+  Hero.lastMelee = Game.time;
+  const pos = Hero.group.position;
+  let hitAny=false;
+  for(const e of enemies){
+    if(e.dead) continue;
+    const d = e.group.position.distanceTo(pos);
+    if(d < 5){
+      damageEnemy(e, 40); hitAny=true;
+      // knockback
+      const dir=new THREE.Vector3().subVectors(e.group.position,pos).normalize();
+      e.group.position.addScaledVector(dir,4);
+    }
+  }
+  Audio.hit();
+  if(hitAny) spawnExplosion(new THREE.Vector3(pos.x,pos.y+1.5,pos.z), 0xffffff, .8);
+  // punch fx
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  spawnExplosion(new THREE.Vector3().copy(pos).addScaledVector(dir,3).setY(pos.y+2), new THREE.Color(Game.suit.trim).getHex(), .5);
+}
+
+function damageEnemy(e, dmg){
+  e.hp -= dmg; e.hitFlash=.2;
+  spawnExplosion(e.group.position, 0xffaa00, .3);
+  if(e.hp<=0){
+    e.dead=true;
+    const T=EnemyTypes[e.type];
+    Game.score += T.score; Game.kills++; addXP(T.xp);
+    spawnExplosion(e.group.position, T.color, 2);
+    Audio.explode();
+    Mission.onKill(e);
+    updateHUD();
+  }
+}
+
+function damageHero(dmg){
+  if(Hero.invuln>0) return;
+  Game.hp -= dmg; Hero.invuln=.4;
+  Audio.hit();
+  flashDamage();
+  if(Game.hp<=0){ Game.hp=0; respawnHero(); }
+  updateHUD();
+}
+function flashDamage(){
+  const f=$('#damageFlash'); f.style.opacity=1;
+  setTimeout(()=>f.style.opacity=0,120);
+}
+function respawnHero(){
+  Assistant.say("Hull critical — emergency teleport engaged.");
+  Hero.group.position.set(0,2,0);
+  Hero.vel.set(0,0,0);
+  Game.hp = Game.hpMax;
+  Game.score = Math.max(0, Game.score-200);
+  updateHUD();
+}
+
+function addXP(n){
+  Game.xp += n;
+  while(Game.xp >= Game.xpNext){
+    Game.xp -= Game.xpNext;
+    Game.level++;
+    Game.xpNext = Math.floor(Game.xpNext*1.4);
+    Game.hpMax += 15; Game.enMax += 10;
+    Game.hp = Game.hpMax; Game.en = Game.enMax;
+    Audio.levelup();
+    Assistant.say(`Level up! You are now level ${Game.level}. Hull and energy upgraded.`);
+    toast(`LEVEL ${Game.level}`);
+  }
+  updateHUD();
+}
+
+/* ============================================================
+   MISSIONS
+   ============================================================ */
+const Mission = {
+  markers:[],
+  onKill(e){
+    const m = Game.missions[Game.missionIndex];
+    if(!m) return;
+    if(m.type==='kill' && e.type===m.target){ m.progress++; checkMission(); }
+    if(m.type==='boss' && e.type==='boss'){ m.progress=1; checkMission(); }
+  },
+  reach(){
+    const m = Game.missions[Game.missionIndex];
+    if(!m) return;
+    if(m.type==='reach'){ m.progress=1; checkMission(); }
+  },
+  spawnMarker(pos, color=0x3fd0ff){
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(4,.3,8,32),
+      new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:1.5, transparent:true, opacity:.8}));
+    ring.rotation.x=Math.PI/2; g.add(ring);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,60,8),
+      new THREE.MeshBasicMaterial({color, transparent:true, opacity:.25}));
+    beam.position.y=30; g.add(beam);
+    g.position.copy(pos);
+    scene.add(g);
+    this.markers.push({group:g, ring});
+    return g;
+  },
+  clearMarkers(){
+    for(const m of this.markers){ scene.remove(m.group); m.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}); }
+    this.markers=[];
+  },
+  start(idx){
+    this.clearMarkers();
+    Game.missionIndex = idx;
+    Game.missionProgress = 0;
+    const m = Game.missions[idx];
+    if(!m){ Assistant.say("All missions complete. Free roam the city, hero."); $('#missionTxt').textContent="Free roam. City is yours."; return; }
+    m.progress = 0;
+    $('#missionTxt').textContent = m.desc;
+    Assistant.say(m.intro || m.desc);
+    if(m.type==='reach' || m.type==='boss'){
+      const pos = m.pos;
+      this.spawnMarker(pos, m.type==='boss'?0xff0044:0x3fd0ff);
+      this.target = pos;
+    }
+  },
+  update(){
+    const m = Game.missions[Game.missionIndex];
+    if(!m) return;
+    if((m.type==='reach'||m.type==='boss') && this.markers[0]){
+      const d = Hero.group.position.distanceTo(this.markers[0].group.position);
+      this.markers[0].ring.rotation.z += .02;
+      if(d < 6 && (m.type==='reach')){ m.progress=1; checkMission(); }
+      if(m.type==='boss' && this.markers[0]){
+        // spawn boss when close
+        if(d < 30 && !m.bossSpawned){
+          m.bossSpawned = true;
+          spawnEnemy('boss', this.markers[0].group.position.clone().setY(35));
+          Assistant.say("Warning: heavy hostile signature detected. Engage with caution.");
+        }
+      }
+    }
+  }
+};
+
+function checkMission(){
+  const m = Game.missions[Game.missionIndex];
+  if(!m) return;
+  const need = m.count || 1;
+  if(m.progress >= need){
+    Game.score += 300;
+    addXP(100);
+    toast("MISSION COMPLETE");
+    Assistant.say("Mission complete. Excellent work, hero.");
+    Mission.clearMarkers();
+    // next mission after delay
+    setTimeout(()=>{ if(Game.running) Mission.start(Game.missionIndex+1); }, 2200);
+  }
+}
+
+function buildMissions(){
+  const spawn = (x,z,y=0)=>new THREE.Vector3(x,y,z);
+  return [
+    { type:'reach', pos:spawn(180,0,2), desc:'Reach the marked zone to scout the sector.', intro:"New objective: fly to the marked zone." },
+    { type:'kill', target:'drone', count:3, desc:'Destroy 3 surveillance drones.', intro:"Hostile drones inbound. Eliminate 3." },
+    { type:'reach', pos:spawn(-250,120,2), desc:'Investigate the disturbance to the northeast.' },
+    { type:'kill', target:'trooper', count:4, desc:'Clear 4 enemy troopers.', intro:"Ground hostiles deployed. Clear them out." },
+    { type:'reach', pos:spawn(300,-260,2), desc:'Reach the industrial district beacon.' },
+    { type:'kill', target:'heavy', count:2, desc:'Destroy 2 heavy mechs.', intro:"Heavy armor detected. Use flight to outmaneuver them." },
+    { type:'boss', pos:spawn(0,-400,45), desc:'Defeat the SKY REAPER boss.', intro:"Sky Reaper incoming. This is the big one, hero." }
+  ];
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+const Input = { f:false,b:false,l:false,r:false, jump:false, down:false, sprint:false, fire:false };
+const keys = {};
+document.addEventListener('keydown', e=>{
+  if(e.repeat) return;
+  const k=e.key.toLowerCase();
+  keys[k]=true;
+  if(k==='w') Input.f=true;
+  if(k==='s') Input.b=true;
+  if(k==='a') Input.l=true;
+  if(k==='d') Input.r=true;
+  if(k===' ') { Input.jump=true; e.preventDefault(); }
+  if(k==='shift') Input.sprint=true;
+  if(k==='control') Input.down=true;
+  if(k==='f') toggleFly();
+  if(k==='v') toggleView();
+  if(k==='e') playerShoot();
+  if(k==='q') playerMelee();
+  if(k==='escape') togglePause();
+  if(k==='m') Assistant.say("Open the mission log from the pause menu.");
+});
+document.addEventListener('keyup', e=>{
+  const k=e.key.toLowerCase(); keys[k]=false;
+  if(k==='w') Input.f=false;
+  if(k==='s') Input.b=false;
+  if(k==='a') Input.l=false;
+  if(k==='d') Input.r=false;
+  if(k===' ') Input.jump=false;
+  if(k==='shift') Input.sprint=false;
+  if(k==='control') Input.down=false;
+});
+document.addEventListener('mousedown', e=>{ if(Game.running && !Game.paused && e.button===0){ Input.fire=true; playerShoot(); } });
+document.addEventListener('mouseup', e=>{ if(e.button===0) Input.fire=false; });
+document.addEventListener('mousemove', e=>{
+  if(!Game.running || Game.paused) return;
+  if(document.pointerLockElement!==renderer.domElement && !isTouch) return;
+  Hero.yaw   -= e.movementX * 0.0022 * Game.sens;
+  Hero.pitch -= e.movementY * 0.0022 * Game.sens;
+  Hero.pitch = clamp(Hero.pitch, -1.2, 1.2);
+});
+renderer_canvas_hook();
+function renderer_canvas_hook(){
+  // wait for renderer creation
+}
+document.addEventListener('click', ()=>{
+  if(Game.running && !Game.paused && !isTouch && document.pointerLockElement!==renderer.domElement){
+    renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock();
+  }
+});
+
+/* Touch controls */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+let stickL={active:false,x:0,y:0,cx:0,cy:0}, stickR={active:false,x:0,y:0,cx:0,cy:0};
+function setupTouch(){
+  if(!isTouch) return;
+  $('#mobile').classList.add('show');
+  const bindStick=(el,st)=>{
+    const i=el.querySelector('i');
+    const start=(e)=>{ const t=e.changedTouches?e.changedTouches[0]:e; const r=el.getBoundingClientRect();
+      st.active=true; st.cx=r.left+r.width/2; st.cy=r.top+r.height/2; move(t); e.preventDefault(); };
+    const move=(e)=>{ if(!st.active) return; const t=e.changedTouches?e.changedTouches[0]:e;
+      let dx=t.clientX-st.cx, dy=t.clientY-st.cy; const max=55; const d=Math.hypot(dx,dy);
+      if(d>max){ dx=dx/d*max; dy=dy/d*max; }
+      st.x=dx/max; st.y=dy/max;
+      i.style.transform=`translate(${dx}px,${dy}px)`;
+      e.preventDefault(); };
+    const end=(e)=>{ st.active=false; st.x=0; st.y=0; i.style.transform='translate(0,0)'; };
+    el.addEventListener('touchstart',start,{passive:false});
+    el.addEventListener('touchmove',move,{passive:false});
+    el.addEventListener('touchend',end); el.addEventListener('touchcancel',end);
+  };
+  bindStick($('#stickL'),stickL);
+  bindStick($('#stickR'),stickR);
+  const hold=(el,on,off)=>{ el.addEventListener('touchstart',e=>{on();e.preventDefault();},{passive:false});
+    el.addEventListener('touchend',e=>{if(off)off();e.preventDefault();},{passive:false}); };
+  hold($('#bJump'), ()=>{ if(Hero.flying){Input.jump=true;} else {Input.jump=true;} });
+  $('#bJump').addEventListener('touchend',()=>{Input.jump=false;});
+  hold($('#bFire'), ()=>{ Input.fire=true; playerShoot(); });
+  $('#bFire').addEventListener('touchend',()=>{Input.fire=false;});
+  hold($('#bFly'), ()=>{ toggleFly(); });
+  hold($('#bMenu'), ()=>{ togglePause(); });
+  // camera look via right stick in update
+}
+function updateTouchLook(dt){
+  if(!isTouch) return;
+  if(stickR.active){
+    Hero.yaw   -= stickR.x * 2.2 * dt * Game.sens;
+    Hero.pitch -= stickR.y * 2.0 * dt * Game.sens;
+    Hero.pitch = clamp(Hero.pitch,-1.2,1.2);
+  }
+  if(stickL.active){
+    Input.f = stickL.y < -0.25;
+    Input.b = stickL.y >  0.25;
+    Input.l = stickL.x < -0.25;
+    Input.r = stickL.x >  0.25;
+    Input.sprint = Math.hypot(stickL.x,stickL.y)>0.85;
+  }
+}
+function toggleFly(){
+  Hero.flying = !Hero.flying;
+  if(Hero.flying){
+    Hero.vel.y = Math.max(Hero.vel.y, 6);
+    Assistant.say("Flight engaged. Thrusters online.");
+    Audio.fly();
+  } else {
+    Assistant.say("Flight disengaged.");
+  }
+  $('#modeTxt').textContent = Hero.flying? 'FLIGHT':'GROUND';
+}
+function toggleView(){
+  Game.firstPerson = !Game.firstPerson;
+  toast(Game.firstPerson? 'FIRST PERSON':'THIRD PERSON');
+  if(Hero.group) Hero.group.visible = !Game.firstPerson || true; // keep body visible
+}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+function updateHUD(){
+  $('#hpFill').style.width = (Game.hp/Game.hpMax*100)+'%';
+  $('#hpTxt').textContent = Math.ceil(Game.hp)+'/'+Game.hpMax;
+  $('#enFill').style.width = (Game.en/Game.enMax*100)+'%';
+  $('#enTxt').textContent = Math.ceil(Game.en)+'/'+Game.enMax;
+  $('#xpFill').style.width = (Game.xp/Game.xpNext*100)+'%';
+  $('#xpTxt').textContent = Game.xp+'/'+Game.xpNext;
+  $('#lvlTxt').textContent = Game.level;
+  $('#scoreTxt').textContent = Game.score;
+  $('#killTxt').textContent = Game.kills;
+}
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1400);
+}
+
+/* ---------- Minimap ---------- */
+const miniCtx = $('#miniCanvas').getContext('2d');
+function drawMinimap(){
+  const c=miniCtx, W=170, H=170, R=W/2;
+  c.clearRect(0,0,W,H);
+  c.save(); c.translate(R,R);
+  c.fillStyle='rgba(3,10,18,.9)'; c.beginPath(); c.arc(0,0,R,0,7); c.fill();
+  c.strokeStyle='rgba(63,208,255,.4)'; c.stroke();
+  const scale = 0.12;
+  const hx = Hero.group? Hero.group.position.x:0, hz = Hero.group? Hero.group.position.z:0;
+  // buildings
+  c.fillStyle='rgba(63,208,255,.25)';
+  for(const [key,grp] of chunks){
+    for(const b of grp.children){
+      if(!b.userData.solid) continue;
+      const x=(b.position.x-hx)*scale, y=(b.position.z-hz)*scale;
+      if(Math.hypot(x,y)<R-4){ c.fillRect(x-1.5,y-1.5,3,3); }
+    }
+  }
+  // mission marker
+  if(Mission.markers[0]){
+    const m=Mission.markers[0].group.position;
+    const x=(m.x-hx)*scale, y=(m.z-hz)*scale;
+    const d=Math.hypot(x,y);
+    if(d<R-6){ c.fillStyle='#ffcc00'; c.beginPath(); c.arc(x,y,3.5,0,7); c.fill(); }
+    else { const a=Math.atan2(y,x); c.fillStyle='#ffcc00'; c.beginPath(); c.arc(Math.cos(a)*(R-8),Math.sin(a)*(R-8),3.5,0,7); c.fill(); }
+  }
+  // enemies
+  for(const e of enemies){
+    const x=(e.group.position.x-hx)*scale, y=(e.group.position.z-hz)*scale;
+    if(Math.hypot(x,y)<R-4){ c.fillStyle=e.type==='boss'?'#ff0044':'#ff5533'; c.beginPath(); c.arc(x,y,e.type==='boss'?4:2,0,7); c.fill(); }
+  }
+  // hero (center) + facing
+  c.save();
+  c.rotate(-(Hero.group?Hero.group.rotation.y:0));
+  c.fillStyle='#3fd0ff'; c.beginPath(); c.moveTo(0,-6); c.lineTo(4,4); c.lineTo(-4,4); c.closePath(); c.fill();
+  c.restore();
+  c.restore();
+}
+
+/* ============================================================
+   SAVE / LOAD
+   ============================================================ */
+function saveGame(){
+  const data = {
+    hp:Game.hp, hpMax:Game.hpMax, en:Game.en, enMax:Game.enMax,
+    xp:Game.xp, xpNext:Game.xpNext, level:Game.level, score:Game.score, kills:Game.kills,
+    suit:Game.suit, selectedMark:parseInt(localStorage.getItem('steelhero_selected_mark')||'1',10), missionIndex:Game.missionIndex,
+    pos: Hero.group? [Hero.group.position.x,Hero.group.position.y,Hero.group.position.z] : [0,2,0]
+  };
+  try{ localStorage.setItem('steelhero_v100_save', JSON.stringify(data)); toast("GAME SAVED"); Assistant.say("Progress saved."); }
+  catch(e){ toast("SAVE FAILED"); }
+}
+function loadGame(){
+  try{
+    const raw = localStorage.getItem('steelhero_v100_save');
+    if(!raw){ toast("NO SAVE FOUND"); return false; }
+    const d = JSON.parse(raw);
+    Object.assign(Game, {hp:d.hp,hpMax:d.hpMax,en:d.en,enMax:d.enMax,xp:d.xp,xpNext:d.xpNext,level:d.level,score:d.score,kills:d.kills,suit:d.suit,missionIndex:d.missionIndex});
+    if(Hero.group && d.pos){ Hero.group.position.set(d.pos[0],d.pos[1],d.pos[2]); }
+    refreshHeroColors(); applySettingsToGame();
+    updateHUD();
+    if(Game.running){ Mission.start(Game.missionIndex); }
+    toast("GAME LOADED"); Assistant.say("Save loaded. Welcome back.");
+    return true;
+  }catch(e){ toast("LOAD FAILED"); return false; }
+}
+
+/* ============================================================
+   MENUS
+   ============================================================ */
+function showMainMenu(){
+  $('#mainMenu').classList.add('show');
+  $('#subMenu').classList.remove('show');
+  $('#pauseMenu').classList.remove('show');
+}
+function hideMenus(){
+  $('#mainMenu').classList.remove('show');
+  $('#subMenu').classList.remove('show');
+  $('#pauseMenu').classList.remove('show');
+  $('#armoryMenu').classList.remove('show');
+}
+function togglePause(){
+  if(!Game.running) return;
+  Game.paused = !Game.paused;
+  if(Game.paused){ $('#pauseMenu').classList.add('show'); document.exitPointerLock && document.exitPointerLock(); }
+  else { $('#pauseMenu').classList.remove('show'); if(!isTouch) renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock(); }
+}
+function applySettingsToGame(){
+  camera.fov = Game.fov; camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Game.quality==='high'? Math.min(devicePixelRatio,2) : 1);
+}
+
+/* Buttons */
+$('#btnNew').onclick = ()=>{ Audio.init(); Audio.ui(); startGame(true); };
+$('#btnContinue').onclick = ()=>{ Audio.init(); Audio.ui();
+  if(localStorage.getItem('steelhero_v100_save')){ startGame(false); loadGame(); }
+  else toast("NO SAVE — starting new game");
+  if(!Game.running) startGame(true);
+};
+$('#btnCustom').onclick = ()=>{ Audio.ui(); openSub('custom'); };
+$('#btnSettings').onclick = ()=>{ Audio.ui(); openSub('settings'); };
+$('#btnHowTo').onclick = ()=>{ Audio.ui(); openSub('howto'); };
+$('#btnCredits').onclick = ()=>{ Audio.ui(); openSub('credits'); };
+
+function openSub(tab){
+  $('#mainMenu').classList.remove('show');
+  $('#subMenu').classList.add('show');
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+tab));
+}
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick=()=>{ Audio.ui(); openSub(b.dataset.tab); };
+});
+$('#btnBackMenu').onclick=$('#btnBackMenu2').onclick=$('#btnBackMenu3').onclick=()=>{ Audio.ui(); showMainMenu(); };
+
+$('#pResume').onclick=()=>{ Audio.ui(); togglePause(); };
+$('#pSave').onclick=()=>{ Audio.ui(); saveGame(); };
+$('#pLoad').onclick=()=>{ Audio.ui(); loadGame(); };
+$('#pCustom').onclick=()=>{ Audio.ui(); $('#pauseMenu').classList.remove('show'); openSub('custom'); };
+$('#pRestart').onclick=()=>{ Audio.ui(); $('#pauseMenu').classList.remove('show'); startGame(true); };
+$('#pQuit').onclick=()=>{ Audio.ui(); Game.running=false; Game.paused=false; showMainMenu(); };
+$('#btnFP').onclick=()=>{ toggleView(); };
+$('#btnQuality').onclick=(e)=>{ Game.quality = Game.quality==='high'?'low':'high'; e.target.textContent='GRAPHICS: '+Game.quality.toUpperCase(); applySettingsToGame(); toast('GRAPHICS '+Game.quality.toUpperCase()); };
+
+/* Suit controls */
+const cArmor=$('#cArmor'), cTrim=$('#cTrim'), cThr=$('#cThruster'), cVis=$('#cVisor');
+const rScale=$('#rScale'), rThrust=$('#rThrust');
+cArmor.value=Game.suit.armor; cTrim.value=Game.suit.trim; cThr.value=Game.suit.thruster; cVis.value=Game.suit.visor;
+rScale.value=Game.suit.scale; rThrust.value=Game.suit.thrust;
+$('#vScale').textContent=Game.suit.scale; $('#vThrust').textContent=Game.suit.thrust;
+cArmor.oninput=()=>{ Game.suit.armor=cArmor.value; refreshHeroColors(); };
+cTrim.oninput=()=>{ Game.suit.trim=cTrim.value; refreshHeroColors(); };
+cThr.oninput=()=>{ Game.suit.thruster=cThr.value; refreshHeroColors(); };
+cVis.oninput=()=>{ Game.suit.visor=cVis.value; refreshHeroColors(); };
+rScale.oninput=()=>{ Game.suit.scale=parseFloat(rScale.value); $('#vScale').textContent=Game.suit.scale.toFixed(2); };
+rThrust.oninput=()=>{ Game.suit.thrust=parseFloat(rThrust.value); $('#vThrust').textContent=Game.suit.thrust.toFixed(2); };
+$('#btnApplySuit').onclick=()=>{ Audio.ui(); refreshHeroColors(); toast("SUIT APPLIED"); Assistant.say("Suit configuration updated."); if(Game.running) hideMenus(); };
+
+/* ============================================================
+   LOCAL AI ARMORY · MARK 1–85
+   ============================================================ */
+let selectedMark = clamp(parseInt(localStorage.getItem('steelhero_selected_mark')||'1',10),1,85);
+let assemblyTimer = null;
+const markSelect = $('#markSelect');
+const markDescriptions = [
+  'Prototype flight armor. Balanced defense and mobility.',
+  'Reinforced plating with improved thruster stability.',
+  'Streamlined combat frame with upgraded repulsors.',
+  'High-mobility armor with enhanced energy routing.',
+  'Heavy-duty frame with reinforced shoulder protection.',
+  'Precision flight suit with responsive control surfaces.',
+  'Advanced alloy shell with improved impact resistance.',
+  'Compact urban-response armor with efficient power use.',
+  'Aerial interceptor configuration with bright energy trim.',
+  'Modernized hero armor with balanced all-round systems.'
+];
+function hslHex(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}else if(h<180){g=c;b=x;}
+  else if(h<240){g=x;b=c;}else if(h<300){r=x;b=c;}else{r=c;b=x;}
+  return '#'+[r,g,b].map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('');
+}
+function markPalette(mark){
+  if(mark===1) return ['#2a7fd4','#3fd0ff','#ff7b00','#00ffd5'];
+  const hue=(190+mark*47)%360;
+  return [
+    hslHex(hue,42,32),
+    hslHex(hue+28,88,65),
+    hslHex(hue+160,95,55),
+    hslHex(hue+70,100,82)
+  ];
+}
+function describeMark(mark){
+  if(mark<=10) return markDescriptions[mark-1];
+  if(mark<=25) return 'Generation II armor. Improved flight control, modular plating and repulsor output.';
+  if(mark<=45) return 'Generation III armor. Adaptive-looking panel layout and reinforced energy channels.';
+  if(mark<=65) return 'Advanced tactical armor. High-output thrusters and layered defensive shell.';
+  if(mark<=84) return 'Experimental next-generation armor. Premium alloy finish and high-energy trim.';
+  return 'MARK 85 · FINAL PROTOTYPE. Signature layered shell, premium metallic finish and luminous energy trim.';
+}
+function updateMarkSelection(){
+  selectedMark = clamp(parseInt(markSelect.value,10)||1,1,85);
+  markSelect.value = selectedMark;
+  $('#markNumber').textContent = 'MARK '+String(selectedMark).padStart(2,'0');
+  $('#markDescription').textContent = describeMark(selectedMark);
+  const palette=markPalette(selectedMark);
+  $('.armory-core').style.borderColor=palette[1];
+  $('.armory-core').style.boxShadow='0 0 25px '+palette[1]+', inset 0 0 22px '+palette[1]+'66';
+  $('#armoryStatus').textContent='AI CORE: READY. Mark '+selectedMark+' selected. Awaiting assembly command.';
+}
+function openArmory(){
+  const wasRunning=Game.running && !Game.paused;
+  if(wasRunning){ Game.paused=true; document.exitPointerLock && document.exitPointerLock(); }
+  $('#mainMenu').classList.remove('show');
+  $('#pauseMenu').classList.remove('show');
+  $('#subMenu').classList.remove('show');
+  $('#armoryMenu').classList.add('show');
+  updateMarkSelection();
+  Assistant.say('AI armory online. Select one of eighty-five armor configurations.');
+}
+function closeArmory(){
+  $('#armoryMenu').classList.remove('show');
+  if(Game.running){ Game.paused=false; if(!isTouch) renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock(); }
+  else showMainMenu();
+}
+function assembleSelectedSuit(){
+  if(assemblyTimer) clearInterval(assemblyTimer);
+  const mark=selectedMark, palette=markPalette(mark);
+  const status=$('#armoryStatus'), fill=$('#assemblyFill'), button=$('#btnAssemble');
+  button.disabled=true; button.textContent='ASSEMBLING...';
+  status.textContent='AI: Scanning Mark '+mark+'. Deploying armor components...';
+  fill.style.width='0%';
+  let progress=0;
+  assemblyTimer=setInterval(()=>{
+    progress=Math.min(100,progress+4);
+    fill.style.width=progress+'%';
+    if(progress===24) status.textContent='AI: Chest core and torso plating locked.';
+    if(progress===52) status.textContent='AI: Shoulder, arm and leg armor attached.';
+    if(progress===78) status.textContent='AI: Helmet, visor and thrusters calibrated.';
+    if(progress>=100){
+      clearInterval(assemblyTimer); assemblyTimer=null;
+      Game.suit.armor=palette[0]; Game.suit.trim=palette[1];
+      Game.suit.thruster=palette[2]; Game.suit.visor=palette[3];
+      Game.suit.thrust=clamp(1+(mark-1)*.006,1,1.5);
+      Game.suit.scale=1;
+      refreshHeroColors();
+      if(Hero.group) Hero.group.traverse(o=>{
+        if(o.isMesh && o.material && o.material.metalness!==undefined){
+          o.material.metalness=Math.min(.98,.82+mark*.0018);
+          o.material.roughness=Math.max(.12,.3-mark*.0018);
+        }
+      });
+      localStorage.setItem('steelhero_selected_mark',String(mark));
+      status.textContent='AI: MARK '+mark+' ASSEMBLY COMPLETE. Suit systems online.';
+      button.disabled=false; button.textContent='⚡ REASSEMBLE MARK '+mark;
+      Assistant.say('Mark '+mark+' assembled. Armor systems are online.');
+      toast('MARK '+mark+' EQUIPPED');
+    }
+  },65);
+}
+markSelect.addEventListener('input',updateMarkSelection);
+$('#markPrev').onclick=()=>{markSelect.value=Math.max(1,selectedMark-1);updateMarkSelection();};
+$('#markNext').onclick=()=>{markSelect.value=Math.min(85,selectedMark+1);updateMarkSelection();};
+$('#btnAssemble').onclick=()=>{Audio.init();Audio.ui();assembleSelectedSuit();};
+$('#btnArmoryClose').onclick=closeArmory;
+
+// Browser voice interface: speech recognition for commands, speech synthesis for replies.
+const VoiceAI = (()=>{
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let recognition=null, listening=false;
+  const status=$('#voiceStatus'), transcript=$('#voiceTranscript'), mic=$('#btnVoice');
+  function reply(message){ status.textContent='AI: '+message; Assistant.say(message,5500); }
+  function processCommand(raw){
+    const text=String(raw||'').toLowerCase().trim(); transcript.textContent='HEARD: '+raw;
+    const match=text.match(/(?:mark|number)\s*(\d{1,2})/i);
+    if(match){
+      const n=clamp(parseInt(match[1],10),1,85); markSelect.value=n; updateMarkSelection();
+      reply('Mark '+n+' selected. Say assemble suit when you are ready.'); return;
+    }
+    if(/assemble|build|make|equip|wear/.test(text)){
+      reply('Starting armor assembly for Mark '+selectedMark+'.'); assembleSelectedSuit(); return;
+    }
+    if(/next|next mark/.test(text)){ markSelect.value=Math.min(85,selectedMark+1); updateMarkSelection(); reply('Selected Mark '+selectedMark+'.'); return; }
+    if(/previous|back mark|previous mark/.test(text)){ markSelect.value=Math.max(1,selectedMark-1); updateMarkSelection(); reply('Selected Mark '+selectedMark+'.'); return; }
+    if(/help|what can you do|commands/.test(text)){ reply('I can select any Mark from 1 to 85, move to the next or previous Mark, and assemble the selected armor.'); return; }
+    if(/close|return to game|exit armory/.test(text)){ reply('Closing the armory.'); setTimeout(closeArmory,650); return; }
+    if(/hello|hi/.test(text)){ reply('Hello, pilot. Your armor systems are ready. Which Mark should I prepare?'); return; }
+    reply('I did not understand that command. Say a Mark number, assemble suit, next Mark, or help.');
+  }
+  function stop(){ if(recognition && listening){ recognition.stop(); } listening=false; mic.textContent='🎙️ START LISTENING'; }
+  function start(){
+    if(!SpeechRecognition){ status.textContent='VOICE INPUT IS NOT SUPPORTED IN THIS BROWSER. Try the latest Chrome or Edge.'; return; }
+    if(listening){ stop(); status.textContent='VOICE AI: Microphone stopped.'; return; }
+    recognition=new SpeechRecognition(); recognition.lang='en-US'; recognition.continuous=false; recognition.interimResults=false;
+    recognition.onstart=()=>{ listening=true; mic.textContent='⏹ STOP LISTENING'; status.textContent='VOICE AI: Listening. Speak a command now.'; };
+    recognition.onresult=(event)=>processCommand(event.results[0][0].transcript);
+    recognition.onerror=(event)=>{ status.textContent='VOICE AI: '+(event.error==='not-allowed'?'Microphone permission was blocked. Allow microphone access in your browser.':'Microphone error: '+event.error); stop(); };
+    recognition.onend=()=>{ listening=false; mic.textContent='🎙️ START LISTENING'; };
+    try{ recognition.start(); }catch(e){ status.textContent='VOICE AI: Could not start microphone. Please try again.'; }
+  }
+  mic.addEventListener('click',start);
+  $('#btnVoiceHelp').addEventListener('click',()=>reply('Say: Select Mark 25. Assemble suit. Next Mark. Previous Mark. Or what can you do?'));
+  return {processCommand};
+})();
+$('#btnArmory').onclick=()=>{Audio.init();Audio.ui();openArmory();};
+$('#pArmory').onclick=()=>{Audio.init();Audio.ui();openArmory();};
+updateMarkSelection();
+
+/* Settings controls */
+const rSens=$('#rSens'), rFov=$('#rFov'), rDraw=$('#rDraw');
+rSens.value=Game.sens; rFov.value=Game.fov; rDraw.value=Game.draw;
+$('#vSens').textContent=Game.sens; $('#vFov').textContent=Game.fov; $('#vDraw').textContent=Game.draw;
+rSens.oninput=()=>{ Game.sens=parseFloat(rSens.value); $('#vSens').textContent=Game.sens.toFixed(1); };
+rFov.oninput=()=>{ Game.fov=parseFloat(rFov.value); $('#vFov').textContent=Game.fov; applySettingsToGame(); };
+rDraw.oninput=()=>{ Game.draw=parseFloat(rDraw.value); $('#vDraw').textContent=Game.draw; };
+
+/* ============================================================
+   BOOT + MAIN LOOP
+   ============================================================ */
+function initThree(){
+  renderer = new THREE.WebGLRenderer({canvas:$('#game'), antialias:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x83cfff);
+  scene.fog = new THREE.Fog(0x9bd8ff, 260, Game.draw);
+
+  camera = new THREE.PerspectiveCamera(Game.fov, innerWidth/innerHeight, 0.1, 2000);
+  camera.position.set(0,8,-12);
+
+  // lights
+  const hemi = new THREE.HemisphereLight(0xdff5ff, 0x566477, 1.05); scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xfff1d6, 2.0);
+  sun.position.set(80,140,40); sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);
+  const d=120; sun.shadow.camera.left=-d; sun.shadow.camera.right=d; sun.shadow.camera.top=d; sun.shadow.camera.bottom=-d;
+  sun.shadow.camera.far = 500;
+  scene.add(sun);
+  const amb = new THREE.AmbientLight(0x9acfff,.42); scene.add(amb);
+
+  // Procedural blue atmospheric sky dome.
+  const skyGeo = new THREE.SphereGeometry(1450, 32, 20);
+  const skyMat = new THREE.ShaderMaterial({
+    side:THREE.BackSide, depthWrite:false,
+    vertexShader:'varying vec3 vWorld; void main(){ vec4 w=modelMatrix*vec4(position,1.0); vWorld=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }',
+    fragmentShader:'varying vec3 vWorld; void main(){ float h=normalize(vWorld).y; vec3 horizon=vec3(0.72,0.88,0.98); vec3 zenith=vec3(0.12,0.48,0.86); float t=smoothstep(-0.12,0.72,h); gl_FragColor=vec4(mix(horizon,zenith,t),1.0); }'
+  });
+  scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+  // Soft procedural cloud banks made from low-poly white cloud puffs.
+  const cloudMat = new THREE.MeshStandardMaterial({color:0xf4fbff, roughness:1, metalness:0});
+  for(let i=0;i<34;i++){
+    const cloud = new THREE.Group();
+    const puffCount = 4 + (Math.random()*4|0);
+    for(let j=0;j<puffCount;j++){
+      const puff = new THREE.Mesh(new THREE.SphereGeometry(rnd(5,10),10,7),cloudMat);
+      puff.position.set((j-(puffCount-1)/2)*8,rnd(-2,2),rnd(-3,3));
+      puff.scale.y=.42; cloud.add(puff);
+    }
+    const a=Math.random()*Math.PI*2, radius=rnd(260,1050);
+    cloud.position.set(Math.cos(a)*radius,rnd(115,235),Math.sin(a)*radius);
+    cloud.rotation.y=Math.random()*Math.PI; scene.add(cloud);
+  }
+
+  clock = new THREE.Clock();
+  window.addEventListener('resize', ()=>{
+    camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+}
+
+function startGame(fresh){
+  if(!Game.ready){ toast("Still loading..."); return; }
+  hideMenus();
+  Game.running = true; Game.paused = false;
+  if(fresh){
+    Game.hp=Game.hpMax=100; Game.en=Game.enMax=100;
+    Game.xp=0; Game.xpNext=100; Game.level=1; Game.score=0; Game.kills=0;
+    Game.missionIndex=0;
+    if(Hero.group) Hero.group.position.set(0,2,0);
+    Hero.vel.set(0,0,0); Hero.flying=false;
+    // clear entities
+    for(const e of enemies){ scene.remove(e.group); }
+    enemies.length=0;
+    for(const p of projectiles){ scene.remove(p.mesh); }
+    projectiles.length=0;
+    Mission.start(0);
+  } else {
+    Mission.start(Game.missionIndex||0);
+  }
+  updateHUD();
+  if(!isTouch) renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock();
+  Assistant.say("Systems online. Welcome, Steel Hero.");
+}
+
+let fpsAcc=0, fpsFrames=0, fpsTimer=0;
+function loop(){
+  requestAnimationFrame(loop);
+  const dt = Math.min(.05, clock.getDelta());
+  if(!Game.running || Game.paused){ renderer.render(scene,camera); return; }
+  Game.time += dt;
+
+  // update touch look
+  updateTouchLook(dt);
+
+  // hero
+  updateHero(dt);
+
+  // energy regen
+  Game.en = clamp(Game.en + 12*dt, 0, Game.enMax);
+  // hp slow regen when idle
+  if(Game.time - Hero.lastDamage > 6) Game.hp = clamp(Game.hp + 2*dt, 0, Game.hpMax);
+  Hero.invuln = Math.max(0, Hero.invuln-dt);
+
+  // continuous fire
+  if(Input.fire && Game.time - Hero.lastShot > .18) playerShoot();
+
+  // entities
+  updateEnemies(dt);
+  updateProjectiles(dt);
+  updateParticles(dt);
+  Mission.update();
+
+  // occasional spawns near hero
+  if(enemies.length < 8 && Math.random() < dt*0.6){
+    const ang = Math.random()*Math.PI*2;
+    const dist = rnd(60,120);
+    const p = new THREE.Vector3(Hero.group.position.x+Math.cos(ang)*dist,
+      rnd(0,25), Hero.group.position.z+Math.sin(ang)*dist);
+    const types = ['drone','drone','trooper','heavy'];
+    spawnEnemy(types[(Math.random()*types.length)|0], p);
+  }
+
+  // HUD throttled
+  fpsTimer += dt; fpsAcc += dt; fpsFrames++;
+  if(fpsTimer > .5){
+    $('#fpsTxt').textContent = Math.round(fpsFrames/fpsAcc);
+    fpsAcc=0; fpsFrames=0; fpsTimer=0;
+    updateHUD();
+  }
+  drawMinimap();
+
+  renderer.render(scene,camera);
+}
+
+function boot(){
+  let p=0;
+  const bar=$('#loadBar'), txt=$('#loadTxt');
+  const steps=[
+    ["Initializing renderer...", ()=>initThree()],
+    ["Building hero...", ()=>{ buildHero(); }],
+    ["Generating city...", ()=>{ for(let x=-2;x<=2;x++) for(let z=-2;z<=2;z++) generateChunk(x,z); }],
+    ["Deploying enemies...", ()=>{
+      for(let i=0;i<6;i++) spawnEnemy('drone', new THREE.Vector3(rnd(-150,150), rnd(15,35), rnd(-150,150)));
+      for(let i=0;i<4;i++) spawnEnemy('trooper', new THREE.Vector3(rnd(-150,150), 2, rnd(-150,150)));
+      spawnEnemy('heavy', new THREE.Vector3(120,2,-120));
+    }],
+    ["Calibrating missions...", ()=>{ Game.missions = buildMissions(); }],
+    ["Starting systems...", ()=>{ updateHUD(); }]
+  ];
+  function next(){
+    if(p>=steps.length){
+      Game.ready = true;
+      $('#loader').style.display='none';
+      showMainMenu();
+      clock = new THREE.Clock();
+      loop();
+      return;
+    }
+    txt.textContent = steps[p][0];
+    bar.style.width = ((p+1)/steps.length*100)+'%';
+    try{ steps[p][1](); }catch(e){ console.error(e); }
+    p++;
+    setTimeout(next, 220);
+  }
+  next();
+}
+
+// hook the pointerlock mousemove properly once renderer exists
+window.addEventListener('load', ()=>{
+  setupTouch();
+  boot();
+});
+</script>
+</body>
+</html>
